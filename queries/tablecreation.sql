@@ -8,6 +8,7 @@ CREATE TABLE Employee (
 	ManagerID INT,
     FirstName VARCHAR(30),
     LastName VARCHAR(30),
+	FullName AS FirstName + ' '+ LastName,
     HiredDate DATE,
     EmployeeAddress VARCHAR(250),
     DepartmentID INT,
