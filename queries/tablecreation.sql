@@ -1,59 +1,73 @@
 CREATE TABLE Department (
-    DepartmentID INT PRIMARY KEY,
+    DepartmentID INT PRIMARY KEY NOT NULL,
     DepartmentName VARCHAR(50)
 );
 
 CREATE TABLE Employee (
-    EmployeeID BIGINT PRIMARY KEY,
-	ManagerID BIGINT,
+    EmployeeID INT PRIMARY KEY NOT NULL,
+	ManagerID INT,
     FirstName VARCHAR(30),
     LastName VARCHAR(30),
     HiredDate DATE,
     EmployeeAddress VARCHAR(250),
     DepartmentID INT,
     FOREIGN KEY (DepartmentID) REFERENCES Department(DepartmentID),
-	FOREIGN KEY (ManagerID) REFERENCES Employee(EmployeeID) ON DELETE SET NULL
+	FOREIGN KEY (ManagerID) REFERENCES Employee(EmployeeID) ON DELETE NO ACTION
+);
+
+
+
+CREATE TABLE MyService (
+	ServiceID INT PRIMARY KEY NOT NULL,
+	ServiceName VARCHAR(40),
+	ServiceDescription VARCHAR(250),
+	ServicePrice INT
 );
 
 CREATE TABLE SalesPerson (
-	EmployeeID BIGINT PRIMARY KEY,
+	EmployeeID INT PRIMARY KEY NOT NULL,
 	ProductSold INT,
 	ExpectedSaleRate DECIMAL(5,2),
 	FOREIGN KEY (EmployeeID) REFERENCES Employee(EmployeeID)
 );
 
 CREATE TABLE BeautyCareSpecialist (
-	EmployeeID BIGINT PRIMARY KEY,
+	EmployeeID INT PRIMARY KEY NOT NULL,
+	Specialty varchar(30),
 	FOREIGN KEY (EmployeeID) REFERENCES Employee(EmployeeID)
 );
 
+
+CREATE TABLE DELIVERS(
+	SpecialistID INT NOT NULL,
+	ServiceID INT NOT NULL,
+	FOREIGN KEY (SpecialistID) REFERENCES BeautyCareSpecialist(EmployeeID),
+	FOREIGN KEY (ServiceID) REFERENCES MyService(ServiceID),
+);
+
 CREATE TABLE BCSCertificates (
-	EmployeeID BIGINT PRIMARY KEY,
-	BCSCertificates VARCHAR(40),
+	CertificateID INT PRIMARY KEY NOT NULL,
+	EmployeeID INT NOT NULL,
+	CertificateType varchar(40),
 	FOREIGN KEY (EmployeeID) REFERENCES BeautyCareSpecialist(EmployeeID)
 );
 
-CREATE TABLE MyService (
-	ServiceID INT PRIMARY KEY,
-	ServiceName VARCHAR(40),
-	ServiceDescription VARCHAR(250),
-	ServicePrice MONEY
-);
+
 
 CREATE TABLE Customer (
-	CustomerID BIGINT PRIMARY KEY,
+	CustomerID INT PRIMARY KEY,
 	CustomerName VARCHAR(30),
 	CustomerSurname VARCHAR(30),
 	CustomerAddress VARCHAR(250),
-	CustomerBudget MONEY
+	CustomerBudget INT,
+	ContactNumber varchar(20)
 );
 
 CREATE TABLE Appointment (
 	AppointmentID INT PRIMARY KEY,
-	AppointmentCapacity TINYINT,
 	AppointmentDate DATE,
 	AppointmentHour DECIMAL(2,2),
-	CustomerID BIGINT,
+	CustomerID INT,
 	ServiceID INT,
 	FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID),
 	FOREIGN KEY (ServiceID) REFERENCES MyService(ServiceID)
@@ -70,7 +84,7 @@ CREATE TABLE Warehouse (
 );
 
 CREATE TABLE Product (
-	ProductID INT PRIMARY KEY,
+	ProductID INT PRIMARY KEY NOT NULL,
 	ProductName VARCHAR(40),
 	ProductDescription VARCHAR(250),
 	ProductPrice DECIMAL(5,2),
@@ -84,20 +98,12 @@ CREATE TABLE Product (
 );
 
 CREATE TABLE MyOrder (
-	OrderID INT PRIMARY KEY,
+	OrderID INT PRIMARY KEY NOT NULL,
 	OrderDate DATE,
-	EmployeeID BIGINT,
-	CustomerID BIGINT,
+	EmployeeID INT,
+	CustomerID INT,
 	ProductID INT,
 	FOREIGN KEY (ProductID) REFERENCES Product(ProductID),
 	FOREIGN KEY (EmployeeID) REFERENCES SalesPerson(EmployeeID),
 	FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID)
 );
-
-CREATE TABLE DeliversBCSandService (
-		EmployeeID BIGINT,
-		ServiceID INT,
-		PRIMARY KEY (EmployeeID,ServiceID),
-		FOREIGN KEY (EmployeeID) REFERENCES BeautyCareSpecialist(EmployeeID),
-		FOREIGN KEY (ServiceID) REFERENCES MyService(ServiceID)
-	);
