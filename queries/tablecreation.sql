@@ -19,14 +19,14 @@ CREATE TABLE Employee (
 
 CREATE TABLE MyService (
 	ServiceID INT PRIMARY KEY NOT NULL,
-	ServiceName VARCHAR(40),
-	ServiceDescription VARCHAR(250),
+	ServiceName VARCHAR(40) UNIQUE,
+	ServiceDescription VARCHAR(250) UNIQUE DEFAULT 'It is a service provided by our personal care company',
 	ServicePrice INT
 );
 
 CREATE TABLE SalesPerson (
 	EmployeeID INT PRIMARY KEY NOT NULL,
-	ProductSold INT,
+	ProductSold INT CHECK(ProductSold>=0),
 	ExpectedSaleRate DECIMAL(5,2),
 	FOREIGN KEY (EmployeeID) REFERENCES Employee(EmployeeID)
 );
@@ -48,7 +48,7 @@ CREATE TABLE DELIVERS(
 CREATE TABLE BCSCertificates (
 	CertificateID INT PRIMARY KEY NOT NULL,
 	EmployeeID INT NOT NULL,
-	CertificateType varchar(40),
+	CertificateType varchar(40) UNIQUE,
 	FOREIGN KEY (EmployeeID) REFERENCES BeautyCareSpecialist(EmployeeID)
 );
 
