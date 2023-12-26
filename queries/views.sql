@@ -6,7 +6,7 @@ s.ProductSold, s.ExpectedSaleRate, COUNT(*) SoldCount
 FROM Employee e 
 INNER JOIN Salesperson s ON e.EmployeeID = s.EmployeeID
 INNER JOIN MyOrder o ON o.EmployeeID = e.EmployeeID
-GROUP BY e.EmployeeID, e.FirstName, e.LastName, e.HiredDate, e.EmployeeAddress,
+GROUP BY e.EmployeeID, e.FullName, e.HiredDate, e.EmployeeAddress,
 s.ProductSold, s.ExpectedSaleRate
 
 
