@@ -112,3 +112,94 @@ BEGIN
     GROUP BY w.WarehouseCity, w.WarehouseDistrict;
 END;
 
+
+-- It creates the appointment
+CREATE PROCEDURE createAppointment  @AppointmentDate DATE, @AppointmentHour DECIMAL(5,2)
+AS
+BEGIN
+    DECLARE @AppointmentId INT
+    SET @AppointmentId = (SELECT COUNT(*) FROM Appointment)
+    INSERT INTO Appointment (AppointmentID, AppointmentDate, AppointmentHour) VALUES (@AppointmentId, @AppointmentDate, @AppointmentHour)
+END;
+
+
+-- It sets the appointment and adjusts the id's to the necessary fields.
+CREATE PROCEDURE setAppointment @CustomerId INT, @ServiceId INT, @AppointmentId INT
+AS
+BEGIN
+    UPDATE Appointment
+    SET CustomerID = @CustomerId, AppointmentID = @AppointmentId
+    WHERE AppointmentID=@AppointmentId 
+END;
+
+
+
+-- Product ordering process performs and MyOrder is inserted
+CREATE PROCEDURE OrderProduct @OrderDate DATE, @EmployeeId INT, @CustomerId INT, @ProductId INT
+AS
+BEGIN
+    DECLARE @OrderId INT
+    SET @OrderId = (SELECT COUNT(*) OrderCount FROM MyOrder)
+    INSERT INTO MyOrder (OrderID, OrderDate, EmployeeID, CustomerID, ProductID) VALUES (@OrderId+1, @OrderDate, @EmployeeId, @CustomerId, @ProductId)
+END;
+
+
+
+-- Manager adds employee.
+CREATE PROCEDURE addEmployee @EmployeeId INT, @ManagerId INT,
+@FirstName varchar(30), @LastName varchar(30), @HiredDate DATE, @Address varchar(250), @DepartmentId INT
+AS
+BEGIN
+    INSERT INTO Employee (EmployeeID, ManagerID, FirstName, LastName, HiredDate, EmployeeAddress, DepartmentID)
+    VALUES (@EmployeeId, @ManagerId, @FirstName, @LastName, @HiredDate, @Address, @DepartmentId)
+END;
+
+
+-- That procedure adds SalesPerson through existing employee.
+CREATE PROCEDURE addSalesPerson @ExpectedSaleRate DECIMAL(5, 2)
+AS
+BEGIN
+
+    DECLARE @SalesPersonId INT
+    SET @SalesPersonId = (SELECT COUNT(*) from SalesPerson) +1
+    INSERT INTO SalesPerson (EmployeeID, ProductSold, ExpectedSaleRate) VALUES (@SalesPersonId, 0, @ExpectedSaleRate)
+END;
+
+
+-- That procedure adds BeautyCareSpecialist through existing employee.
+CREATE PROCEDURE addBeautyCareSpecialist @Specialty varchar(30)
+AS
+BEGIN
+
+    DECLARE @SpecialistId INT
+    SET @SpecialistId = (SELECT COUNT(*)  from BeautyCareSpecialist) +1
+    INSERT INTO BeautyCareSpecialist (EmployeeID, Specialty) VALUES (@SpecialistId, @Specialty)
+END;
+
+-- It deletes the outdated orders from the database. (The orders which have been done more than 1 year ago)
+CREATE PROCEDURE DeleteOldOrders
+    @YearsAgo INT
+AS
+BEGIN
+    DELETE FROM MyOrder
+    WHERE OrderDate < DATEADD(YEAR, -@YearsAgo, GETDATE());
+END;
+
+
+-- That procedure deletes target appointment.
+CREATE PROCEDURE DeleteAppointment
+    @AppointmentID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Check if the appointment exists
+    IF NOT EXISTS (SELECT 1 FROM Appointment WHERE AppointmentID = @AppointmentID)
+    BEGIN
+        RAISERROR ('Appointment not found.', 16, 1);
+        RETURN;
+    END
+
+    -- Delete the appointment
+    DELETE FROM Appointment WHERE AppointmentID = @AppointmentID;
+END;
