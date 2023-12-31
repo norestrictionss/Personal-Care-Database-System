@@ -86,7 +86,7 @@ CREATE TABLE Warehouse (
 );
 
 CREATE TABLE Product (
-	ProductID IDENTITY INT PRIMARY KEY NOT NULL,
+	ProductID INT IDENTITY PRIMARY KEY NOT NULL,
 	ProductName VARCHAR(40),
 	ProductDescription VARCHAR(250),
 	ProductPrice DECIMAL(5,2),
