@@ -55,7 +55,7 @@ BEGIN
 
     IF(NOT EXISTS(SELECT * FROM MyService m WHERE @ServiceID=m.ServiceID))
     BEGIN
-        RAISERROR('Service not found.')
+        RAISERROR('Service not found.', 16,1 )
     END
     ELSE
     BEGIN

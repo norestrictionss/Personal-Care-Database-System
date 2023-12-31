@@ -21,7 +21,7 @@ CREATE TABLE Employee (
 
 CREATE TABLE MyService (
 	ServiceID INT IDENTITY PRIMARY KEY NOT NULL,
-	ServiceName VARCHAR(40) UNIQUE,
+	ServiceName VARCHAR(40),
 	ServiceDescription VARCHAR(250) UNIQUE DEFAULT 'It is a service provided by our personal care company',
 	ServicePrice INT
 );
