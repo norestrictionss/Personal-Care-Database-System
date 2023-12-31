@@ -10,7 +10,7 @@ CREATE TABLE Employee (
     LastName VARCHAR(30),
 	FullName AS FirstName + ' '+ LastName,
     HiredDate DATE,
-	ContacNumber varchar(30) UNIQUE,
+	ContactNumber varchar(30) UNIQUE,
     EmployeeAddress VARCHAR(250) UNIQUE,
     DepartmentID INT,
     FOREIGN KEY (DepartmentID) REFERENCES Department(DepartmentID),
