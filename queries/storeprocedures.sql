@@ -52,16 +52,24 @@ CREATE PROCEDURE GetServiceAppointments
     @ServiceID INT
 AS
 BEGIN
-    SELECT 
-        a.AppointmentID,
-        a.AppointmentDate,
-        a.AppointmentHour,
-        c.CustomerID,
-        c.CustomerName,
-        c.CustomerSurname
-    FROM Appointment a
-    INNER JOIN Customer c ON a.CustomerID = c.CustomerID
-    WHERE a.ServiceID = @ServiceID;
+
+    IF(NOT EXISTS(SELECT * FROM MyService m WHERE @ServiceID=m.ServiceID))
+    BEGIN
+        RAISERROR('Service not found.')
+    END
+    ELSE
+    BEGIN
+        SELECT 
+            a.AppointmentID,
+            a.AppointmentDate,
+            a.AppointmentHour,
+            c.CustomerID,
+            c.CustomerName,
+            c.CustomerSurname
+        FROM Appointment a
+        INNER JOIN Customer c ON a.CustomerID = c.CustomerID
+        WHERE a.ServiceID = @ServiceID;
+    END
 END;
 
 
@@ -72,12 +80,25 @@ CREATE PROCEDURE AssignEmployeeToDepartment
     @DepartmentID INT
 AS
 BEGIN
-    UPDATE Employee
-    SET DepartmentID = @DepartmentID
-    WHERE EmployeeID = @EmployeeID;
+    IF(NOT EXISTS(SELECT * FROM Employee e WHERE e.EmployeeID=@EmployeeID))
+    BEGIN
+        RAISERROR('Employee not found.', 16, 1)
+    END
+    ELSE 
+    BEGIN 
+        IF(NOT EXISTS(SELECT * FROM Department d WHERE d.DepartmentID=@DepartmentID))
+        BEGIN
+            RAISERROR('Department not found.', 16, 1)
+        END
+        ELSE
+        BEGIN
+            UPDATE Employee
+            SET DepartmentID = @DepartmentID
+            WHERE EmployeeID = @EmployeeID;
+        END
+    END
 
 END;
-
 
 -- It extensively summarizes the information of the employee including the sales.
 CREATE PROCEDURE GenerateEmployeeReport
@@ -114,13 +135,13 @@ END;
 
 
 -- It creates the appointment
-CREATE PROCEDURE createAppointment  @AppointmentDate DATE, @AppointmentHour DECIMAL(5,2)
+CREATE PROCEDURE createAppointment  @AppointmentDate DATE, @AppointmentHour TIME
 AS
 BEGIN
-    DECLARE @AppointmentId INT
-    SET @AppointmentId = (SELECT COUNT(*) FROM Appointment)
-    INSERT INTO Appointment (AppointmentID, AppointmentDate, AppointmentHour) VALUES (@AppointmentId, @AppointmentDate, @AppointmentHour)
+
+    INSERT INTO Appointment (AppointmentDate, AppointmentHour) VALUES (@AppointmentDate, @AppointmentHour)
 END;
+
 
 
 -- It sets the appointment and adjusts the id's to the necessary fields.
@@ -128,7 +149,7 @@ CREATE PROCEDURE setAppointment @CustomerId INT, @ServiceId INT, @AppointmentId 
 AS
 BEGIN
     UPDATE Appointment
-    SET CustomerID = @CustomerId, AppointmentID = @AppointmentId
+    SET CustomerID = @CustomerId, ServiceID = @ServiceId
     WHERE AppointmentID=@AppointmentId 
 END;
 
@@ -138,42 +159,39 @@ END;
 CREATE PROCEDURE OrderProduct @OrderDate DATE, @EmployeeId INT, @CustomerId INT, @ProductId INT
 AS
 BEGIN
-    DECLARE @OrderId INT
-    SET @OrderId = (SELECT COUNT(*) OrderCount FROM MyOrder)
-    INSERT INTO MyOrder (OrderID, OrderDate, EmployeeID, CustomerID, ProductID) VALUES (@OrderId+1, @OrderDate, @EmployeeId, @CustomerId, @ProductId)
+
+    INSERT INTO MyOrder (OrderDate, EmployeeID, CustomerID, ProductID) VALUES (@OrderDate, @EmployeeId, @CustomerId, @ProductId)
 END;
 
 
 
 -- Manager adds employee.
-CREATE PROCEDURE addEmployee @EmployeeId INT, @ManagerId INT,
+CREATE PROCEDURE addEmployee @ManagerId INT,
 @FirstName varchar(30), @LastName varchar(30), @HiredDate DATE, @Address varchar(250), @DepartmentId INT
 AS
 BEGIN
-    INSERT INTO Employee (EmployeeID, ManagerID, FirstName, LastName, HiredDate, EmployeeAddress, DepartmentID)
-    VALUES (@EmployeeId, @ManagerId, @FirstName, @LastName, @HiredDate, @Address, @DepartmentId)
+    INSERT INTO Employee (ManagerID, FirstName, LastName, HiredDate, EmployeeAddress, DepartmentID)
+    VALUES (@ManagerId, @FirstName, @LastName, @HiredDate, @Address, @DepartmentId)
 END;
 
 
+
 -- That procedure adds SalesPerson through existing employee.
-CREATE PROCEDURE addSalesPerson @ExpectedSaleRate DECIMAL(5, 2)
+CREATE PROCEDURE addSalesPerson @ExpectedSaleRate DECIMAL(5, 2), @EmployeeId INT, @ProductSold INT
 AS
 BEGIN
 
     DECLARE @SalesPersonId INT
-    SET @SalesPersonId = (SELECT COUNT(*) from SalesPerson) +1
-    INSERT INTO SalesPerson (EmployeeID, ProductSold, ExpectedSaleRate) VALUES (@SalesPersonId, 0, @ExpectedSaleRate)
+    INSERT INTO SalesPerson (EmployeeID, ProductSold, ExpectedSaleRate) VALUES (@EmployeeId, @ProductSold, @ExpectedSaleRate)
 END;
 
 
 -- That procedure adds BeautyCareSpecialist through existing employee.
-CREATE PROCEDURE addBeautyCareSpecialist @Specialty varchar(30)
+CREATE PROCEDURE addBeautyCareSpecialist @EmployeeId INT, @Specialty varchar(30)
 AS
 BEGIN
 
-    DECLARE @SpecialistId INT
-    SET @SpecialistId = (SELECT COUNT(*)  from BeautyCareSpecialist) +1
-    INSERT INTO BeautyCareSpecialist (EmployeeID, Specialty) VALUES (@SpecialistId, @Specialty)
+    INSERT INTO BeautyCareSpecialist (EmployeeID, Specialty) VALUES (@EmployeeId, @Specialty)
 END;
 
 -- It deletes the outdated orders from the database. (The orders which have been done more than 1 year ago)
@@ -186,6 +204,7 @@ BEGIN
 END;
 
 
+
 -- That procedure deletes target appointment.
 CREATE PROCEDURE DeleteAppointment
     @AppointmentID INT
@@ -193,13 +212,12 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+    -- Delete the appointment
+    DELETE FROM Appointment WHERE AppointmentID = @AppointmentID;
     -- Check if the appointment exists
     IF NOT EXISTS (SELECT 1 FROM Appointment WHERE AppointmentID = @AppointmentID)
     BEGIN
         RAISERROR ('Appointment not found.', 16, 1);
-        RETURN;
+        ROLLBACK TRANSACTION
     END
-
-    -- Delete the appointment
-    DELETE FROM Appointment WHERE AppointmentID = @AppointmentID;
 END;
