@@ -39,4 +39,12 @@ INNER JOIN MyService m ON m.ServiceID = a.ServiceID
 
 
 
-
+-- Saç Bakım servisinde 1 yıldan daha kısa süredir çalışan Employee'leri listele
+CREATE VIEW list_new_hair_employees AS
+SELECT DISTINCT e.FirstName, e.LastName, e.EmployeeAddress, e.HiredDate
+    FROM BeautyCareSpecialist bcs, Employee e, DELIVERS d, MyService ms
+        WHERE bcs.EmployeeID = e.EmployeeID
+            AND d.SpecialistID = bcs.EmployeeID
+            AND ms.ServiceID = d.ServiceID
+            AND ms.ServiceName LIKE ('%Saç Bakım%')
+            AND DATEDIFF(year ,e.HiredDate,'2020-12-31 23:50') < 1
