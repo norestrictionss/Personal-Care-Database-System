@@ -1,10 +1,10 @@
 CREATE TABLE Department (
-    DepartmentID INT IDENTITY PRIMARY KEY NOT NULL,
+    DepartmentID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
     DepartmentName VARCHAR(50)
 );
 
 CREATE TABLE Employee (
-    EmployeeID INT IDENTITY PRIMARY KEY NOT NULL,
+    EmployeeID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
 	ManagerID INT,
     FirstName VARCHAR(30),
     LastName VARCHAR(30),
@@ -20,7 +20,7 @@ CREATE TABLE Employee (
 
 
 CREATE TABLE MyService (
-	ServiceID INT IDENTITY PRIMARY KEY NOT NULL,
+	ServiceID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
 	ServiceName VARCHAR(40),
 	ServiceDescription VARCHAR(250) UNIQUE DEFAULT 'It is a service provided by our personal care company',
 	ServicePrice INT
@@ -48,16 +48,16 @@ CREATE TABLE DELIVERS(
 );
 
 CREATE TABLE BCSCertificates (
-	CertificateID INT IDENTITY PRIMARY KEY NOT NULL,
+	CertificateID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
 	EmployeeID INT NOT NULL,
-	CertificateType varchar(100) UNIQUE,
+	CertificateType varchar(100),
 	FOREIGN KEY (EmployeeID) REFERENCES BeautyCareSpecialist(EmployeeID)
 );
 
 
 
 CREATE TABLE Customer (
-	CustomerID INT IDENTITY PRIMARY KEY,
+	CustomerID INT IDENTITY(1,1) PRIMARY KEY,
 	CustomerName VARCHAR(30),
 	CustomerSurname VARCHAR(30),
 	CustomerAddress VARCHAR(250),
@@ -66,7 +66,7 @@ CREATE TABLE Customer (
 );
 
 CREATE TABLE Appointment (
-	AppointmentID INT IDENTITY PRIMARY KEY,
+	AppointmentID INT IDENTITY(1,1) PRIMARY KEY,
 	AppointmentDate DATE,
 	AppointmentHour TIME,
 	CustomerID INT,
@@ -86,7 +86,7 @@ CREATE TABLE Warehouse (
 );
 
 CREATE TABLE Product (
-	ProductID INT IDENTITY PRIMARY KEY NOT NULL,
+	ProductID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
 	ProductName VARCHAR(40),
 	ProductDescription VARCHAR(250),
 	ProductPrice DECIMAL(5,2),
@@ -100,7 +100,7 @@ CREATE TABLE Product (
 );
 
 CREATE TABLE MyOrder (
-	OrderID INT IDENTITY PRIMARY KEY NOT NULL,
+	OrderID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
 	OrderDate DATE,
 	EmployeeID INT,
 	CustomerID INT,
@@ -109,3 +109,4 @@ CREATE TABLE MyOrder (
 	FOREIGN KEY (EmployeeID) REFERENCES SalesPerson(EmployeeID),
 	FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID)
 );
+
