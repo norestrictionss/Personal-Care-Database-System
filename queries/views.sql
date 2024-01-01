@@ -5,7 +5,7 @@ SELECT e.EmployeeID, e.FullName, e.HiredDate, e.EmployeeAddress,
 s.ProductSold, s.ExpectedSaleRate, COUNT(*) SoldCount
 FROM Employee e 
 INNER JOIN Salesperson s ON e.EmployeeID = s.EmployeeID
-INNER JOIN MyOrder o ON o.EmployeeID = e.EmployeeID
+LEFT JOIN MyOrder o ON o.EmployeeID = e.EmployeeID
 GROUP BY e.EmployeeID, e.FullName, e.HiredDate, e.EmployeeAddress,
 s.ProductSold, s.ExpectedSaleRate
 
@@ -31,11 +31,11 @@ WHERE e.ManagerID IS NULL
 --Listing all of the customers and their appointments
 CREATE VIEW list_customers_and_appointments AS
 SELECT c.CustomerName, c.CustomerSurname, c.CustomerAddress,
-c.CustomerBudget, c.CustomerBudget, c.ContactNumber,
+c.CustomerBudget, c.ContactNumber,
 a.AppointmentDate, a.AppointmentHour
 FROM Customer c 
 INNER JOIN Appointment a ON a.CustomerID = c.CustomerID
-
+INNER JOIN MyService m ON m.ServiceID = a.ServiceID
 
 
 
