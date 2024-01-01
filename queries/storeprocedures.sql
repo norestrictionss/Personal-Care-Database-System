@@ -36,7 +36,8 @@ BEGIN
             c.CustomerSurname
         FROM Appointment a
         INNER JOIN Customer c ON a.CustomerID = c.CustomerID
-        WHERE a.ServiceName = @ServiceName;
+        INNER JOIN MyService m ON m.ServiceName = @ServiceName
+        WHERE a.ServiceID = m.ServiceID;
     END
 END;
 
