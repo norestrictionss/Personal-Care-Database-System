@@ -1,4 +1,4 @@
--- Create a stored procedure to get customers exceeding their budget
+-- Create a stored procedure to get customers that exceeds the budget entered as an argument
 CREATE PROCEDURE GetCustomersExceedingBudget
     @ThresholdBudget INT
 AS
@@ -19,41 +19,30 @@ CREATE PROCEDURE GetProductInventory
     @ProductID INT
 AS
 BEGIN
-    SELECT 
-        ProductID,
-        ProductName,
-        ProductDescription,
-        ProductPrice
-    FROM Product
-    WHERE ProductID = @ProductID;
-END;
 
-
--- It returns the employee performance summary
-CREATE PROCEDURE GetEmployeeSalesPerformanceSummary
-AS
-BEGIN
-    SELECT 
-        e.EmployeeID,
-        e.FirstName,
-        e.LastName,
-        SUM(sp.ProductSold) AS TotalProductsSold,
-        SUM(sp.ProductSold * p.ProductPrice) AS TotalRevenue
-    FROM Employee e
-    LEFT JOIN SalesPerson sp ON e.EmployeeID = sp.EmployeeID
-    LEFT JOIN MyOrder o ON e.EmployeeID = o.EmployeeID
-    LEFT JOIN Product p ON o.ProductID = p.ProductID
-    GROUP BY e.EmployeeID, e.FirstName, e.LastName;
+    IF(NOT EXISTS(SELECT * FROM Product p WHERE p.ProductID = @ProductID))
+    BEGIN
+        RAISERROR('Product not found.', 16, 1)
+    END
+    ELSE
+    BEGIN
+            SELECT 
+            ProductID,
+            ProductName,
+            ProductPrice
+        FROM Product
+        WHERE ProductID = @ProductID;
+    END
 END;
 
 
 -- It returns the appointments accordingly with their service type.
 CREATE PROCEDURE GetServiceAppointments
-    @ServiceID INT
+    @ServiceName INT
 AS
 BEGIN
 
-    IF(NOT EXISTS(SELECT * FROM MyService m WHERE @ServiceID=m.ServiceID))
+    IF(NOT EXISTS(SELECT * FROM MyService m WHERE @ServiceName=m.ServiceName))
     BEGIN
         RAISERROR('Service not found.', 16, 1)
     END
@@ -68,7 +57,7 @@ BEGIN
             c.CustomerSurname
         FROM Appointment a
         INNER JOIN Customer c ON a.CustomerID = c.CustomerID
-        WHERE a.ServiceID = @ServiceID;
+        WHERE a.ServiceName = @ServiceName;
     END
 END;
 
@@ -138,6 +127,7 @@ END;
 CREATE PROCEDURE createAppointment  @AppointmentDate DATE, @AppointmentHour TIME
 AS
 BEGIN
+    
 
     INSERT INTO Appointment (AppointmentDate, AppointmentHour) VALUES (@AppointmentDate, @AppointmentHour)
 END;
@@ -167,14 +157,21 @@ END;
 
 -- Manager adds employee.
 CREATE PROCEDURE addEmployee @ManagerId INT,
-@FirstName varchar(30), @LastName varchar(30), @HiredDate DATE, @Address varchar(250), @DepartmentId INT
+@FirstName varchar(30), @LastName varchar(30), @HiredDate DATE, @ContactNumber INT, @Address varchar(250), @DepartmentID INT
 AS
 BEGIN
-    INSERT INTO Employee (ManagerID, FirstName, LastName, HiredDate, EmployeeAddress, DepartmentID)
-    VALUES (@ManagerId, @FirstName, @LastName, @HiredDate, @Address, @DepartmentId)
+	
+	-- Employee with ID 1 is the general manager. He/she is also the manager of the department managers.
+	IF(NOT EXISTS(SELECT * FROM Employee e WHERE e.EmployeeID=@ManagerId AND e.ManagerID=1))
+	BEGIN
+		RAISERROR('Manager not found.', 16, 1)
+	END
+	ELSE
+	BEGIN
+		INSERT INTO Employee (ManagerID, FirstName, LastName, HiredDate, ContactNumber, EmployeeAddress, DepartmentID)
+		VALUES (@ManagerId, @FirstName, @LastName, @HiredDate, @ContactNumber, @Address, @DepartmentId)
+	END
 END;
-
-
 
 -- That procedure adds SalesPerson through existing employee.
 CREATE PROCEDURE addSalesPerson @ExpectedSaleRate DECIMAL(5, 2), @EmployeeId INT, @ProductSold INT
@@ -218,7 +215,6 @@ BEGIN
 END;
 
 
-
 -- That procedure deletes target appointment.
 CREATE PROCEDURE DeleteAppointment
     @AppointmentID INT
@@ -238,3 +234,41 @@ BEGIN
         DELETE FROM Appointment WHERE AppointmentID = @AppointmentID;
     END
 END;
+
+
+CREATE PROCEDURE DeleteEmployee
+    @EmployeeId INT, @ManagerId INT
+AS
+BEGIN
+
+    IF(@ManagerId=1 OR @EmployeeId=1)
+    BEGIN
+        RAISERROR('You can not delete managers.', 16, 1)
+    END
+    ELSE
+    BEGIN
+        IF(NOT EXISTS(SELECT * FROM Employee e WHERE e.ManagerID = @ManagerId))
+        BEGIN
+            RAISERROR('Manager not found', 16, 1)
+        END
+        ELSE
+        BEGIN
+            
+            IF(NOT EXISTS(SELECT * FROM Employee e WHERE e.EmployeeID = @EmployeeId))
+            BEGIN
+                RAISERROR('Employee not found.', 16, 1)
+            END
+            ELSE
+            BEGIN
+                IF(EXISTS(SELECT * FROM Employee e WHERE e.EmployeeID = @EmployeeId AND e.ManagerID=@ManagerId))
+                BEGIN
+                    DELETE FROM Employee WHERE EmployeeID=@EmployeeId
+                END
+                ELSE
+                BEGIN  
+                    RAISERROR('That manager doesnt manage that employee.', 16, 1)
+                END
+            END
+        END
+    END
+END
