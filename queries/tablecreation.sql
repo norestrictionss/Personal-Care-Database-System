@@ -50,7 +50,7 @@ CREATE TABLE DELIVERS(
 CREATE TABLE BCSCertificates (
 	CertificateID INT IDENTITY PRIMARY KEY NOT NULL,
 	EmployeeID INT NOT NULL,
-	CertificateType varchar(40) UNIQUE,
+	CertificateType varchar(100) UNIQUE,
 	FOREIGN KEY (EmployeeID) REFERENCES BeautyCareSpecialist(EmployeeID)
 );
 
