@@ -55,7 +55,7 @@ BEGIN
 
     IF(NOT EXISTS(SELECT * FROM MyService m WHERE @ServiceID=m.ServiceID))
     BEGIN
-        RAISERROR('Service not found.', 16,1 )
+        RAISERROR('Service not found.', 16, 1)
     END
     ELSE
     BEGIN
@@ -182,7 +182,14 @@ AS
 BEGIN
 
     DECLARE @SalesPersonId INT
-    INSERT INTO SalesPerson (EmployeeID, ProductSold, ExpectedSaleRate) VALUES (@EmployeeId, @ProductSold, @ExpectedSaleRate)
+    IF(NOT EXISTS(SELECT * FROM Employee WHERE EmployeeID=@EmployeeId))
+    BEGIN
+        RAISERROR('Employee not found.', 16, 1)
+    END
+    ELSE
+    BEGIN
+        INSERT INTO SalesPerson (EmployeeID, ProductSold, ExpectedSaleRate) VALUES (@EmployeeId, @ProductSold, @ExpectedSaleRate)
+    END
 END;
 
 
@@ -191,7 +198,14 @@ CREATE PROCEDURE addBeautyCareSpecialist @EmployeeId INT, @Specialty varchar(30)
 AS
 BEGIN
 
-    INSERT INTO BeautyCareSpecialist (EmployeeID, Specialty) VALUES (@EmployeeId, @Specialty)
+    IF(NOT EXISTS(SELECT * FROM Employee WHERE EmployeeID=@EmployeeId))
+    BEGIN
+        RAISERROR('Employee not found.', 16, 1)
+    END
+    ELSE
+    BEGIN
+        INSERT INTO BeautyCareSpecialist (EmployeeID, Specialty) VALUES (@EmployeeId, @Specialty)
+    END
 END;
 
 -- It deletes the outdated orders from the database. (The orders which have been done more than 1 year ago)
@@ -212,12 +226,15 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Delete the appointment
-    DELETE FROM Appointment WHERE AppointmentID = @AppointmentID;
+
     -- Check if the appointment exists
     IF NOT EXISTS (SELECT 1 FROM Appointment WHERE AppointmentID = @AppointmentID)
     BEGIN
         RAISERROR ('Appointment not found.', 16, 1);
-        ROLLBACK TRANSACTION
+    END
+    ELSE
+    BEGIN
+        -- Delete the appointment
+        DELETE FROM Appointment WHERE AppointmentID = @AppointmentID;
     END
 END;
