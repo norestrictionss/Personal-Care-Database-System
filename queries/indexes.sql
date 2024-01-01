@@ -12,3 +12,6 @@ ON MyService(ServiceID)
 
 CREATE INDEX idx_bcs
 ON BeautyCareSpecialist(EmployeeID)
+
+
+CREATE CLUSTERED INDEX idx_delivers ON DELIVERS(SpecialistID)
