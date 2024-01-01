@@ -88,7 +88,6 @@ CREATE TABLE Warehouse (
 CREATE TABLE Product (
 	ProductID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
 	ProductName VARCHAR(40),
-	ProductDescription VARCHAR(250),
 	ProductPrice DECIMAL(5,2),
 	WarehouseCity VARCHAR(30),
 	WarehouseDistrict VARCHAR(30),
