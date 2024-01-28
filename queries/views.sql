@@ -49,3 +49,65 @@ WHERE bcs.EmployeeID = e.EmployeeID
     AND ms.ServiceName LIKE ('%Saç Bakım%')
     AND DATEDIFF(year, e.HiredDate, GETDATE()) < 5;
     
+
+CREATE VIEW AppointmentsWithNoCustomers AS
+SELECT
+    A.AppointmentID,
+    A.AppointmentDate,
+    A.AppointmentHour,
+    A.CustomerID,
+    A.ServiceID,
+    S.ServiceName,
+    S.ServiceDescription,
+    S.ServicePrice,
+    B.EmployeeID,
+    B.Specialty,
+	e.FullName
+FROM
+    Appointment A
+JOIN
+    MyService S ON A.ServiceID = S.ServiceID
+LEFT JOIN
+    Customer C ON A.CustomerID = C.CustomerID
+LEFT JOIN
+    DELIVERS D ON A.ServiceID = D.ServiceID
+LEFT JOIN
+    BeautyCareSpecialist B ON D.SpecialistID = B.EmployeeID
+LEFT JOIN
+	Employee e ON e.EmployeeID = B.EmployeeID
+WHERE
+    C.CustomerID IS NULL;
+
+
+CREATE VIEW OrderHistory AS 
+SELECT
+    mo.OrderID,
+    mo.OrderDate,
+    e.EmployeeID AS SalesPersonID,
+    e.FullName AS SalesPersonName,
+    c.CustomerID,
+    c.FullName AS CustomerName,
+    p.ProductID,
+    p.ProductName,
+    p.ProductPrice,
+    w.WarehouseCity,
+    w.WarehouseDistrict,
+    w.WarehouseNeighbourhood,
+    w.WarehouseStreet,
+    w.WarehouseBuildingNumber,
+    w.WarehouseApartmentNumber
+FROM
+    MyOrder mo
+JOIN
+    SalesPerson e ON mo.EmployeeID = e.EmployeeID
+JOIN
+    Customer c ON mo.CustomerID = c.CustomerID
+JOIN
+    Product p ON mo.ProductID = p.ProductID
+JOIN
+    Warehouse w ON p.WarehouseCity = w.WarehouseCifty
+               AND p.WarehouseDistrict = w.WarehouseDistrict
+               AND p.WarehouseNeighbourhood = w.WarehouseNeighbourhood
+               AND p.WarehouseStreet = w.WarehouseStreet
+               AND p.WarehouseBuildingNumber = w.WarehouseBuildingNumber
+               AND p.WarehouseApartmentNumber = w.WarehouseApartmentNumber;

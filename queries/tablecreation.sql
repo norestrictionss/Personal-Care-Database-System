@@ -60,6 +60,7 @@ CREATE TABLE Customer (
 	CustomerID INT IDENTITY(1,1) PRIMARY KEY,
 	CustomerName VARCHAR(30),
 	CustomerSurname VARCHAR(30),
+	FullName AS CustomerName + ' '+CustomerSurname,
 	CustomerAddress VARCHAR(250),
 	CustomerBudget INT,
 	ContactNumber varchar(20) UNIQUE
@@ -108,4 +109,5 @@ CREATE TABLE MyOrder (
 	FOREIGN KEY (EmployeeID) REFERENCES SalesPerson(EmployeeID),
 	FOREIGN KEY (CustomerID) REFERENCES Customer(CustomerID)
 );
+
 

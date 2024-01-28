@@ -99,12 +99,12 @@ END;
 
 -- Manager adds employee.
 CREATE PROCEDURE addEmployee @ManagerId INT,
-@FirstName varchar(30), @LastName varchar(30), @HiredDate DATE, @ContactNumber INT, @Address varchar(250), @DepartmentID INT
+@FirstName varchar(30), @LastName varchar(30), @HiredDate DATE, @ContactNumber varchar(30), @Address varchar(250), @DepartmentID INT
 AS
 BEGIN
 	
 	-- Employee with ID 1 is the general manager. He/she is also the manager of the department managers.
-	IF(NOT EXISTS(SELECT * FROM Employee e WHERE e.EmployeeID=@ManagerId AND e.ManagerID=1))
+	IF(NOT EXISTS(SELECT * FROM Employee e WHERE e.ManagerID = @ManagerId))
 	BEGIN
 		RAISERROR('Manager not found.', 16, 1)
 	END
@@ -193,7 +193,6 @@ END;
 CREATE PROCEDURE addBeautyCareSpecialist @EmployeeId INT, @Specialty varchar(30)
 AS
 BEGIN
-
     IF(NOT EXISTS(SELECT * FROM Employee WHERE EmployeeID=@EmployeeId))
     BEGIN
         RAISERROR('Employee not found.', 16, 1)
@@ -203,65 +202,102 @@ BEGIN
         INSERT INTO BeautyCareSpecialist (EmployeeID, Specialty) VALUES (@EmployeeId, @Specialty)
     END
 END;
--- It returns the Product Depending on Product ID
-CREATE PROCEDURE GetProductInventory
-    @ProductID INT
-AS
-BEGIN
-
-    IF(NOT EXISTS(SELECT * FROM Product p WHERE p.ProductID = @ProductID))
-    BEGIN
-        RAISERROR('Product not found.', 16, 1)
-    END
-    ELSE
-    BEGIN
-            SELECT 
-            ProductID,
-            ProductName,
-            ProductPrice
-        FROM Product
-        WHERE ProductID = @ProductID;
-    END
-END;
-
-
-
-
-
-
-
-
-
--- It creates the appointment
-CREATE PROCEDURE createAppointment  @AppointmentDate DATE, @AppointmentHour TIME
-AS
-BEGIN
-    
-
-    INSERT INTO Appointment (AppointmentDate, AppointmentHour) VALUES (@AppointmentDate, @AppointmentHour)
-END;
-
 
 
 -- It sets the appointment and adjusts the id's to the necessary fields.
-CREATE PROCEDURE setAppointment @CustomerId INT, @ServiceId INT, @AppointmentId INT
+CREATE PROCEDURE setAppointment @FullName VARCHAR(60), @ContactNumber VARCHAR(20), @AppointmentId INT
 AS
 BEGIN
-    UPDATE Appointment
-    SET CustomerID = @CustomerId, ServiceID = @ServiceId
-    WHERE AppointmentID=@AppointmentId 
+
+    DECLARE @Budget INT;
+    DECLARE @Price INT;
+    DECLARE @CustomerID INT;
+    SET @Budget = (SELECT c.CustomerBudget FROM Customer c WHERE c.FullName = @FullName AND c.ContactNumber = @ContactNumber)
+    SET @Price = (SELECT m.ServicePrice FROM Appointment a INNER JOIN MyService m ON a.ServiceID = m.ServiceID 
+                    WHERE a.AppointmentID = @AppointmentId)
+
+    SET @CustomerID = (SELECT c.CustomerID FROM Customer c WHERE c.FullName = @FullName AND c.ContactNumber = @ContactNumber)
+    IF(@Budget>@Price)
+    BEGIN
+        UPDATE Appointment
+        SET CustomerID = @CustomerID
+        WHERE AppointmentID=@AppointmentId 
+
+        UPDATE Customer
+        SET CustomerBudget = CustomerBudget - @Price
+        WHERE CustomerID = @CustomerID
+    END
+    ELSE
+    BEGIN
+        RAISERROR('Budget is insufficient', 16, 1)
+    END
 END;
+
+-- It cancels the existing appointment set by the customer. 
+CREATE PROCEDURE cancelAppointment @FullName VARCHAR(60), @ContactNumber VARCHAR(20), @AppointmentID INT
+AS
+BEGIN
+
+    DECLARE @Price INT;
+    SET @Price = (SELECT m.ServicePrice FROM Appointment a INNER JOIN MyService m ON a.ServiceID = m.ServiceID 
+                    WHERE a.AppointmentID = @AppointmentId)
+
+    UPDATE Customer
+    SET CustomerBudget = CustomerBudget + @Price
+    WHERE FullName = @FullName AND
+    ContactNumber = @ContactNumber
+
+    UPDATE Appointment 
+    SET CustomerID = NULL
+    WHERE AppointmentID = @AppointmentID
+
+END
 
 
 
 -- Product ordering process performs and MyOrder is inserted
-CREATE PROCEDURE OrderProduct @OrderDate DATE, @EmployeeId INT, @CustomerId INT, @ProductId INT
+CREATE PROCEDURE OrderProduct @OrderDate DATE, @EmployeeId INT, @ProductId INT, @FullName varchar(60), @ContactNumber varchar(30)
+AS
+BEGIN
+    DECLARE @Price INT;
+    DECLARE @Budget INT;
+    DECLARE @CustomerID INT;
+    SET @Budget = (SELECT c.CustomerBudget FROM Customer c WHERE c.FullName = @FullName AND c.ContactNumber = @ContactNumber)
+    SET @Price = (SELECT p.ProductPrice FROM Product p WHERE p.ProductID = @ProductId)
+    SET @CustomerID = (SELECT c.CustomerID FROM Customer c WHERE c.FullName = @FullName AND c.ContactNumber = @ContactNumber)
+    PRINT @Budget
+    PRINT @Price
+    PRINT @CustomerID
+    IF(@Budget>@Price)
+    BEGIN
+        INSERT INTO MyOrder (OrderDate, EmployeeID, CustomerID, ProductID) VALUES (@OrderDate, @EmployeeId, @CustomerID, @ProductId)
+    END
+    ELSE
+    BEGIN
+        RAISERROR('Budget is insufficient', 16, 1)
+    END
+END;
+
+
+
+
+CREATE PROCEDURE cancelOrder @FullName varchar(60), @ContactNumber varchar(30), @OrderID INT
 AS
 BEGIN
 
-    INSERT INTO MyOrder (OrderDate, EmployeeID, CustomerID, ProductID) VALUES (@OrderDate, @EmployeeId, @CustomerId, @ProductId)
-END;
+    DECLARE @Price INT;
+    DECLARE @Budget INT;
+    DECLARE @CustomerID INT;
+    SET @Price = (SELECT p.ProductPrice FROM MyOrder m INNER JOIN Product p ON m.ProductID = p.ProductID)
+    SET @CustomerID = (SELECT c.CustomerID FROM Customer c WHERE c.FullName = @FullName AND c.ContactNumber = @ContactNumber)
+    DELETE FROM MyOrder WHERE OrderID = @OrderID AND CustomerID = @CustomerID
 
+    UPDATE Customer 
+    SET CustomerBudget = CustomerBudget + @Price
+    WHERE CustomerID = @CustomerID
+END
+
+---
 
 
 
@@ -279,6 +315,16 @@ BEGIN
     BEGIN
         INSERT INTO SalesPerson (EmployeeID, ProductSold, ExpectedSaleRate) VALUES (@EmployeeId, @ProductSold, @ExpectedSaleRate)
     END
+END;
+
+
+-- It creates the appointment
+CREATE PROCEDURE createAppointment  @AppointmentDate DATE, @AppointmentHour TIME
+AS
+BEGIN
+    
+
+    INSERT INTO Appointment (AppointmentDate, AppointmentHour) VALUES (@AppointmentDate, @AppointmentHour)
 END;
 
 
