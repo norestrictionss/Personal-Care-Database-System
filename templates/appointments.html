@@ -1,0 +1,87 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="./style.css">
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<body>
+    <div id="container">
+    <h1>Arranged Appointments</h1>
+    <table border="1">
+        <thead>
+            <tr>
+              
+                
+                <th><h1>Customer Name</h1></th>
+                <th><h1>Customer Surname</h1></th>
+                <th><h1>Customer Address</h1></th>
+                <th><h1>Customer Budget</h1></th>
+                <th><h1>Contact Number</h1></th>
+                <th><h1>Appointment Date</h1></th>
+                <th><h1>Appointment Hour</h1></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appointment_list in full_appointments %}
+                <tr>
+                    {% for value in appointment_list %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h1>Free Appointments</h1>
+    <table border="1">
+        <thead>
+            <tr>
+              
+                <th><h1>Appointment ID</h1></th>
+                <th><h1>Appointment Date</h1></th>
+                <th><h1>Appointment Hour</h1></th>
+                <th><h1>Customer ID</h1></th>
+                <th><h1>Service ID</h1></th>
+                <th><h1>Service Name</h1></th>
+                <th><h1>Service Description</h1></th>
+                <th><h1>Service Price</h1></th>
+                <th><h1>Employee ID</h1></th>
+                <th><h1>Specialty</h1></th>
+                <th><h1>Employee FullName</h1></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for appointment_list in free_appointments %}
+                <tr>
+                    {% for value in appointment_list %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+
+            
+
+                </tr>
+            {% endfor %}
+            
+        </tbody>
+    </table>
+    <form method="post" action="{{ url_for('set_appointment') }}">
+        <button class="btn btn-primary" type="submit" name="set_appointment" value="set_appointment">Set Appointment</button>
+    </form>
+
+    
+</div>
+</body>
+</html>

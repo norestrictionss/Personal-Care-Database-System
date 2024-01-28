@@ -1,0 +1,92 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="./style.css">
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<body>
+    <div id="container">
+
+    <h1>Beauty Care Specialists</h1>
+
+    <table border="1">
+        <thead>
+            <tr>
+              
+                
+                <th><h1>Employee ID</h1></th>
+                <th><h1>First Name</h1></th>
+                <th><h1>Last Name</h1></th>
+                <th><h1>Hired Date</h1></th>
+                <th><h1>Specialty</h1></th>
+                <th><h1>Service Name</h1></th>
+                <th><h1>Service Description</h1></th>
+                <th><h1>Service Price</h1></th>
+                <th><h1>Appointment Date</h1></th>
+                <th><h1>Appointment Hour</h1></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bcs in beautycarespecialists %}
+                <tr>
+                    {% for value in bcs %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h1>Add Beauty Care Specialist</h1>
+    <form method="post" action ="{{ url_for('add_bcs') }}">
+        <input type="text" name="first_name" placeholder="First Name..." required>
+        <input type="text" name="last_name" placeholder="Last Name..." required>
+        <input type="text" name="contact_number" placeholder="Contact Number..." required>
+        <input type="text" name="employee_address" placeholder="Employee Address..." required>
+        <input type="text" name="specialty" placeholder="Specialty" required>
+        <button class = "btn btn-primary" name = "completeOrder" value = "completeOrder">Submit</button>
+    </form>
+
+    <h1>Sales Person</h1>
+    <table border="1">
+        <thead>
+            <tr>
+              
+                
+                <th><h1>Employee ID</h1></th>
+                <th><h1>Full Name</h1></th>
+                <th><h1>Hired Date</h1></th>
+                <th><h1>Employee Address</h1></th>
+                <th><h1>Count of Product Sold</h1></th>
+                <th><h1>Expected Sale Rate</h1></th>
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in salesperson %}
+                <tr>
+                    {% for value in s[:-1] %}
+                        <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+  
+</div>
+</body>
+</html>

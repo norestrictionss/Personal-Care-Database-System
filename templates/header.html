@@ -1,0 +1,30 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="stylesheet" href="./style.css">
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<body>
+
+        <div id = "container">
+            <form method="post" action="{{ url_for('handle_button') }}">
+                <button class = "btn btn-primary" name = "button_action_one" value="Appointments">Appointments</button>
+                <button class = "btn btn-primary" name = "button_action_three" value = "Employees">Employees</button>
+                <button class = "btn btn-primary" name = "button_action_five" value = "Products">Products</button>
+                <button class = "btn btn-primary" name = "button_action_seven" value = "Orders">Orders</button>
+            </form>
+        </div>
+</body>
+</html>
